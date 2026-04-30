@@ -1,5 +1,5 @@
 streamlit
 pymupdf
 opencv-python-headless
-zxing-cpp
+pyzbar
 numpy
