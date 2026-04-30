@@ -8,7 +8,7 @@ import tempfile
 import fitz                     # PyMuPDF
 import numpy as np
 import cv2
-import zxingcpp                 # 純 Python QR/條碼解碼，取代 pyzbar
+from pyzbar.pyzbar import decode as pyzbar_decode
 import streamlit as st
 from pathlib import Path
 
@@ -60,15 +60,17 @@ def preprocess_variants(image_bgr):
 
 
 def decode_qr_from_image(image_bgr):
-    """用 zxingcpp 解碼，對每種前處理變體嘗試"""
+    """用 pyzbar 解碼，對每種前處理變體嘗試"""
     found = {}
     for variant in preprocess_variants(image_bgr):
-        # zxingcpp 接受 numpy array（灰階或 BGR 均可）
-        results = zxingcpp.read_barcodes(variant)
-        for r in results:
-            text = r.text
+        results = pyzbar_decode(variant)
+        for obj in results:
+            try:
+                text = obj.data.decode("utf-8")
+            except UnicodeDecodeError:
+                text = obj.data.decode("latin-1")
             if text and text not in found:
-                found[text] = r
+                found[text] = obj
     return list(found.keys())
 
 
